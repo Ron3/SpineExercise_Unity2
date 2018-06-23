@@ -34,6 +34,8 @@ using UnityEngine;
 using System.Collections;
 using Spine.Unity;
 
+
+
 namespace Spine.Unity.Examples {
 	public class FootSoldierExample : MonoBehaviour {
 		[SpineAnimation("Idle")]
@@ -65,13 +67,32 @@ namespace Spine.Unity.Examples {
 
 		SkeletonAnimation skeletonAnimation;
 
+		public SkeletonAnimation GetSkeletonAnimation()
+		{
+			return this.skeletonAnimation;
+		}
+
 		void Awake () {
 			skeletonAnimation = GetComponent<SkeletonAnimation>();
 			skeletonAnimation.OnRebuild += Apply;
+			// skeletonAnimation.state.Event += HandleEvent2;
 		}
 
 		void Apply (SkeletonRenderer skeletonRenderer) {
 			StartCoroutine("Blink");
+		}
+
+		void Start()
+		{
+			// 这里监听事件
+			this.skeletonAnimation.AnimationState.End += delegate(TrackEntry trackEntry)
+			{
+				if(trackEntry.IsComplete == true)
+				{
+					
+				}
+					
+			};
 		}
 
 		void Update () {
@@ -99,6 +120,64 @@ namespace Spine.Unity.Examples {
 				yield return new WaitForSeconds(blinkDuration);
 				skeletonAnimation.Skeleton.SetAttachment(eyesSlot, eyesOpenAttachment);
 			}
+		}
+
+		/// <summary>
+		/// 播放攻击动画
+		/// </summary>
+		public void tryAttack()
+		{
+
+			this.skeletonAnimation.AnimationState.SetAnimation(0, this.attackAnimation, false);
+
+		}
+
+		/// <summary>
+		/// 播放走路
+		/// </summary>
+		public void tryWalk()
+		{
+			if(this.skeletonAnimation.AnimationState.ToString() == "Move")
+			{
+				return;
+			}
+
+			this.skeletonAnimation.AnimationState.SetAnimation(0, this.moveAnimation, true);
+			// this.skeletonAnimation.AnimationState.AddAnimation(0, this.moveAnimation, false, 0);
+		}
+
+		/// <summary>
+		/// 空闲(站立)
+		/// </summary>
+		public void tryIdle()
+		{
+			if(this.skeletonAnimation.AnimationState.ToString() == "Idle" ||
+			 this.skeletonAnimation.AnimationState.ToString() == "Attack")
+			{
+				return;
+			}
+
+			this.skeletonAnimation.AnimationState.SetAnimation(0, this.idleAnimation, true);
+		}
+
+		/// <summary>
+		/// 这里监听动画事件
+		/// <param name="state"></param>
+		/// <param name="trackIndex"></param>
+		/// <param name="e"></param>
+		void HandleEvent (Spine.TrackEntry trackEntry, Spine.Event e) 
+		{
+			Debug.Log("HandleEvent ==> " + e.data.name);	
+		}
+
+		/// <summary>
+		/// 这里监听动画事件
+		/// <param name="state"></param>
+		/// <param name="trackIndex"></param>
+		/// <param name="e"></param>
+		void HandleEvent2 (Spine.AnimationState state, int trackIndex, Spine.Event e) 
+		{
+			Debug.Log("HandleEvent2 ==> " + e.data.name);	
 		}
 	}
 }
